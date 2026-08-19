@@ -1,11 +1,1018 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plan</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>House Plan & Floor Layout Designer</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger-bg: #fee2e2;
+      --danger-border: #ef4444;
+      --danger-text: #b91c1c;
+      --warning-bg: #fef3c7;
+      --warning-border: #f59e0b;
+      --warning-text: #b45309;
+      --success: #16a34a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar Layout */
+    .sidebar {
+      width: 420px;
+      min-width: 400px;
+      background: var(--panel-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.03);
+      z-index: 10;
+    }
+
+    .sidebar-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      background: #f1f5f9;
+    }
+
+    .sidebar-header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .sidebar-header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .sidebar-content {
+      padding: 16px 20px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Form Card */
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fafafa;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      background: #fff;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: var(--danger-text);
+      padding: 4px 8px;
+      font-size: 0.75rem;
+    }
+
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+
+    /* Alerts Panel */
+    .alerts-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .alert {
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .alert-danger {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger-text);
+    }
+
+    .alert-warning {
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: var(--warning-text);
+    }
+
+    .alert-success {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #15803d;
+    }
+
+    /* Room List */
+    .room-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+    }
+
+    .room-item.has-error {
+      border-color: var(--danger-border);
+      background: #fff5f5;
+    }
+
+    .room-color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    /* Main Canvas Area */
+    .main-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #e5e7eb;
+    }
+
+    .toolbar {
+      background: #ffffff;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stats-badge {
+      background: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .stats-badge strong {
+      color: var(--text-main);
+    }
+
+    .canvas-wrapper {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    canvas {
+      background: #ffffff;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-radius: 4px;
+      cursor: crosshair;
+    }
+
+    .canvas-hint {
+      position: absolute;
+      bottom: 16px;
+      background: rgba(15, 23, 42, 0.8);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+  </style>
 </head>
 <body>
-    <h1>Plan</h1>
+
+  <!-- Sidebar: Settings & Controls -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>House Plan Studio</h1>
+      <p>Interactive 2D Architectural Layout & Validator</p>
+    </div>
+
+    <div class="sidebar-content">
+      <!-- 1. Overall Plot Setup -->
+      <div class="card">
+        <div class="card-title">
+          <span>Overall Plot Dimensions</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);" id="plotAreaText">Area: 1,200 sq ft</span>
+        </div>
+        <div class="form-grid">
+          <div>
+            <label for="plotWidth">Plot Width</label>
+            <input type="number" id="plotWidth" value="40" min="5" max="300" step="1">
+          </div>
+          <div>
+            <label for="plotLength">Plot Length</label>
+            <input type="number" id="plotLength" value="30" min="5" max="300" step="1">
+          </div>
+          <div class="full-width">
+            <label for="unitSelect">Measurement Unit</label>
+            <select id="unitSelect">
+              <option value="ft" selected>Feet (ft)</option>
+              <option value="m">Meters (m)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Add Room Form -->
+      <div class="card">
+        <div class="card-title">Add Room / Space</div>
+        <div class="form-grid">
+          <div class="full-width">
+            <label for="roomType">Room Type</label>
+            <select id="roomType">
+              <option value="Living Room" data-color="#bae6fd" data-border="#0284c7">Living Room</option>
+              <option value="Master Bedroom" data-color="#e9d5ff" data-border="#9333ea">Master Bedroom</option>
+              <option value="Bedroom" data-color="#ddd6fe" data-border="#7c3aed">Bedroom</option>
+              <option value="Kitchen" data-color="#fef08a" data-border="#ca8a04">Kitchen</option>
+              <option value="Bathroom" data-color="#99f6e4" data-border="#0d9488">Bathroom</option>
+              <option value="Dining" data-color="#fed7aa" data-border="#ea580c">Dining Area</option>
+              <option value="Balcony" data-color="#bbf7d0" data-border="#16a34a">Balcony / Porch</option>
+              <option value="Garage" data-color="#e2e8f0" data-border="#475569">Garage</option>
+              <option value="Custom" data-color="#f5d0fe" data-border="#c026d3">Custom Room</option>
+            </select>
+          </div>
+          <div class="full-width">
+            <label for="roomName">Custom Label (Optional)</label>
+            <input type="text" id="roomName" placeholder="e.g. Guest Bed 2">
+          </div>
+          <div>
+            <label for="roomW">Width</label>
+            <input type="number" id="roomW" value="12" min="1" step="0.5">
+          </div>
+          <div>
+            <label for="roomL">Length</label>
+            <input type="number" id="roomL" value="14" min="1" step="0.5">
+          </div>
+          <div>
+            <label for="roomX">Place at X</label>
+            <input type="number" id="roomX" value="0" min="0" step="0.5">
+          </div>
+          <div>
+            <label for="roomY">Place at Y</label>
+            <input type="number" id="roomY" value="0" min="0" step="0.5">
+          </div>
+          <div class="full-width" style="margin-top: 4px;">
+            <button class="btn-primary" id="addRoomBtn" style="width: 100%;">+ Add Room to Layout</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Real-Time Validation Warnings -->
+      <div class="card">
+        <div class="card-title">
+          <span>Boundary & Integrity Check</span>
+          <span id="validationCount" style="font-size: 0.75rem; font-weight: bold;"></span>
+        </div>
+        <div id="alertsList" class="alerts-container">
+          <div class="alert alert-success">✓ All rooms fit within plot limits.</div>
+        </div>
+      </div>
+
+      <!-- 4. Rooms List & Quick Actions -->
+      <div class="card" style="flex: 1;">
+        <div class="card-title">
+          <span>Planned Rooms (<span id="roomsCount">0</span>)</span>
+          <button class="btn-danger" id="clearAllBtn">Clear All</button>
+        </div>
+        <div id="roomListContainer" style="max-height: 180px; overflow-y: auto;">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Work Area -->
+  <main class="main-stage">
+    <!-- Top Action Bar -->
+    <header class="toolbar">
+      <div class="toolbar-group">
+        <div class="stats-badge">Plot: <strong id="statPlot">40 × 30 ft</strong></div>
+        <div class="stats-badge">Built Area: <strong id="statBuilt">0 sq ft</strong> (<span id="statCoverage">0%</span>)</div>
+        <div class="stats-badge">Open Area: <strong id="statOpen">1,200 sq ft</strong></div>
+      </div>
+
+      <div class="toolbar-group">
+        <button class="btn-secondary" id="loadSampleBtn">Load 2BHK Sample</button>
+        <button class="btn-primary" id="exportBtn">Export Image (PNG)</button>
+      </div>
+    </header>
+
+    <!-- Canvas -->
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <canvas id="planCanvas"></canvas>
+      <div class="canvas-hint">💡 Drag any room on the canvas to reposition with snap-to-grid</div>
+    </div>
+  </main>
+
+  <script>
+    // --- Application State ---
+    const state = {
+      unit: 'ft',
+      plot: { width: 40, length: 30 },
+      rooms: [],
+      selectedRoomId: null,
+      draggedRoom: null,
+      dragOffset: { x: 0, y: 0 },
+      canvasScale: 1,
+      canvasOrigin: { x: 0, y: 0 },
+      gridSnap: 0.5 // snap to 0.5 unit increments
+    };
+
+    // Color definitions
+    const roomTypeColors = {
+      "Living Room": { bg: "rgba(186, 230, 253, 0.75)", border: "#0284c7" },
+      "Master Bedroom": { bg: "rgba(233, 213, 255, 0.75)", border: "#9333ea" },
+      "Bedroom": { bg: "rgba(221, 214, 254, 0.75)", border: "#7c3aed" },
+      "Kitchen": { bg: "rgba(254, 240, 138, 0.75)", border: "#ca8a04" },
+      "Bathroom": { bg: "rgba(153, 246, 228, 0.75)", border: "#0d9488" },
+      "Dining": { bg: "rgba(254, 215, 170, 0.75)", border: "#ea580c" },
+      "Balcony": { bg: "rgba(187, 247, 208, 0.75)", border: "#16a34a" },
+      "Garage": { bg: "rgba(226, 232, 240, 0.75)", border: "#475569" },
+      "Custom": { bg: "rgba(245, 208, 254, 0.75)", border: "#c026d3" },
+      "Error": { bg: "rgba(254, 202, 202, 0.85)", border: "#dc2626" }
+    };
+
+    // DOM Elements
+    const canvas = document.getElementById('planCanvas');
+    const ctx = canvas.getContext('2d');
+    const wrapper = document.getElementById('canvasWrapper');
+
+    const plotWidthInput = document.getElementById('plotWidth');
+    const plotLengthInput = document.getElementById('plotLength');
+    const unitSelect = document.getElementById('unitSelect');
+
+    const roomTypeInput = document.getElementById('roomType');
+    const roomNameInput = document.getElementById('roomName');
+    const roomWInput = document.getElementById('roomW');
+    const roomLInput = document.getElementById('roomL');
+    const roomXInput = document.getElementById('roomX');
+    const roomYInput = document.getElementById('roomY');
+    const addRoomBtn = document.getElementById('addRoomBtn');
+
+    const alertsList = document.getElementById('alertsList');
+    const validationCount = document.getElementById('validationCount');
+    const roomListContainer = document.getElementById('roomListContainer');
+    const roomsCountSpan = document.getElementById('roomsCount');
+
+    const statPlot = document.getElementById('statPlot');
+    const statBuilt = document.getElementById('statBuilt');
+    const statCoverage = document.getElementById('statCoverage');
+    const statOpen = document.getElementById('statOpen');
+    const plotAreaText = document.getElementById('plotAreaText');
+
+    // --- Initialization ---
+    function init() {
+      resizeCanvas();
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        render();
+      });
+
+      attachEventListeners();
+      loadSamplePlan();
+    }
+
+    function resizeCanvas() {
+      const rect = wrapper.getBoundingClientRect();
+      const padding = 30;
+      canvas.width = rect.width - padding;
+      canvas.height = rect.height - padding;
+      computeTransform();
+    }
+
+    // Compute coordinate mapping to maintain aspect ratio and padding
+    function computeTransform() {
+      const margin = 60; // Margin around plot for measurement text
+      const availW = canvas.width - margin * 2;
+      const availH = canvas.height - margin * 2;
+
+      const scaleX = availW / state.plot.width;
+      const scaleY = availH / state.plot.length;
+      state.canvasScale = Math.min(scaleX, scaleY);
+
+      const renderedW = state.plot.width * state.canvasScale;
+      const renderedH = state.plot.length * state.canvasScale;
+
+      state.canvasOrigin.x = (canvas.width - renderedW) / 2;
+      state.canvasOrigin.y = (canvas.height - renderedH) / 2;
+    }
+
+    // World units to Canvas Pixels
+    function toPxX(x) { return state.canvasOrigin.x + x * state.canvasScale; }
+    function toPxY(y) { return state.canvasOrigin.y + y * state.canvasScale; }
+    function toPxDist(d) { return d * state.canvasScale; }
+
+    // Canvas Pixels to World Units
+    function toWorldX(px) { return (px - state.canvasOrigin.x) / state.canvasScale; }
+    function toWorldY(py) { return (py - state.canvasOrigin.y) / state.canvasScale; }
+
+    // --- Validation Engine ---
+    function validateLayout() {
+      const errors = [];
+      const warnings = [];
+
+      state.rooms.forEach((r, idx) => {
+        r.hasBoundaryError = false;
+        r.hasOverlap = false;
+
+        // 1. Check Boundary Overflow
+        const isOutOfBounds = 
+          r.x < 0 || 
+          r.y < 0 || 
+          (r.x + r.w) > state.plot.width + 0.001 || 
+          (r.y + r.l) > state.plot.length + 0.001;
+
+        if (isOutOfBounds) {
+          r.hasBoundaryError = true;
+          let details = [];
+          if (r.x < 0) details.push(`Left by ${Math.abs(r.x).toFixed(1)}${state.unit}`);
+          if (r.y < 0) details.push(`Top by ${Math.abs(r.y).toFixed(1)}${state.unit}`);
+          if ((r.x + r.w) > state.plot.width) {
+            details.push(`Right by ${((r.x + r.w) - state.plot.width).toFixed(1)}${state.unit}`);
+          }
+          if ((r.y + r.l) > state.plot.length) {
+            details.push(`Bottom by ${((r.y + r.l) - state.plot.length).toFixed(1)}${state.unit}`);
+          }
+
+          errors.push({
+            room: r,
+            message: `<strong>${r.name}</strong> extends outside overall boundaries (${details.join(', ')}).`
+          });
+        }
+
+        // 2. Check Overlaps with Other Rooms
+        for (let j = idx + 1; j < state.rooms.length; j++) {
+          const other = state.rooms[j];
+          const overlap = !(
+            r.x + r.w <= other.x + 0.001 ||
+            other.x + other.w <= r.x + 0.001 ||
+            r.y + r.l <= other.y + 0.001 ||
+            other.y + other.l <= r.y + 0.001
+          );
+
+          if (overlap) {
+            r.hasOverlap = true;
+            other.hasOverlap = true;
+            warnings.push({
+              message: `<strong>${r.name}</strong> and <strong>${other.name}</strong> overlap.`
+            });
+          }
+        }
+      });
+
+      updateAlertsUI(errors, warnings);
+    }
+
+    function updateAlertsUI(errors, warnings) {
+      alertsList.innerHTML = '';
+      const totalIssues = errors.length + warnings.length;
+
+      if (totalIssues === 0) {
+        alertsList.innerHTML = `<div class="alert alert-success">✓ Perfect! All rooms are inside boundaries with no overlaps.</div>`;
+        validationCount.textContent = "Valid";
+        validationCount.style.color = "var(--success)";
+      } else {
+        validationCount.textContent = `${totalIssues} Issue${totalIssues > 1 ? 's' : ''}`;
+        validationCount.style.color = errors.length > 0 ? "var(--danger-text)" : "var(--warning-text)";
+
+        errors.forEach(err => {
+          const el = document.createElement('div');
+          el.className = 'alert alert-danger';
+          el.innerHTML = `⚠️ ${err.message}`;
+          alertsList.appendChild(el);
+        });
+
+        warnings.forEach(warn => {
+          const el = document.createElement('div');
+          el.className = 'alert alert-warning';
+          el.innerHTML = `⚠️ ${warn.message}`;
+          alertsList.appendChild(el);
+        });
+      }
+    }
+
+    // --- Stats Calculator ---
+    function updateStats() {
+      const totalPlotArea = state.plot.width * state.plot.length;
+      let builtArea = 0;
+
+      state.rooms.forEach(r => {
+        builtArea += (r.w * r.l);
+      });
+
+      const openArea = Math.max(0, totalPlotArea - builtArea);
+      const coveragePct = totalPlotArea > 0 ? ((builtArea / totalPlotArea) * 100).toFixed(1) : 0;
+
+      const unitSqr = `sq ${state.unit}`;
+      plotAreaText.textContent = `Area: ${totalPlotArea.toLocaleString()} ${unitSqr}`;
+      statPlot.textContent = `${state.plot.width} × ${state.plot.length} ${state.unit}`;
+      statBuilt.textContent = `${builtArea.toFixed(1)} ${unitSqr}`;
+      statCoverage.textContent = `${coveragePct}%`;
+      statOpen.textContent = `${openArea.toFixed(1)} ${unitSqr}`;
+
+      roomsCountSpan.textContent = state.rooms.length;
+      renderRoomList();
+    }
+
+    function renderRoomList() {
+      roomListContainer.innerHTML = '';
+      if (state.rooms.length === 0) {
+        roomListContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 10px;">No rooms added yet.</div>`;
+        return;
+      }
+
+      state.rooms.forEach(r => {
+        const item = document.createElement('div');
+        item.className = `room-item ${r.hasBoundaryError ? 'has-error' : ''}`;
+        const color = roomTypeColors[r.type] ? roomTypeColors[r.type].border : '#3b82f6';
+
+        item.innerHTML = `
+          <div style="display: flex; align-items: center;">
+            <span class="room-color-dot" style="background: ${color};"></span>
+            <div>
+              <strong>${r.name}</strong>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                ${r.w}×${r.l} ${state.unit} (${(r.w * r.l).toFixed(1)} sq ${state.unit})
+              </div>
+            </div>
+          </div>
+          <div>
+            <button class="btn-danger delete-btn" data-id="${r.id}">✕</button>
+          </div>
+        `;
+        roomListContainer.appendChild(item);
+      });
+
+      // Attach delete events
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.target.getAttribute('data-id');
+          state.rooms = state.rooms.filter(r => r.id !== id);
+          validateLayout();
+          updateStats();
+          render();
+        });
+      });
+    }
+
+    // --- Canvas Rendering Pipeline ---
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawArchitecturalGrid();
+      drawPlotBoundary();
+      drawRooms();
+    }
+
+    function drawArchitecturalGrid() {
+      const gridStep = state.unit === 'ft' ? 5 : 2; // grid line every 5ft or 2m
+      ctx.save();
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 1;
+
+      // Draw background grid across whole canvas
+      for (let x = 0; x < canvas.width; x += 20) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 20) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawPlotBoundary() {
+      const px = toPxX(0);
+      const py = toPxY(0);
+      const pw = toPxDist(state.plot.width);
+      const pl = toPxDist(state.plot.length);
+
+      ctx.save();
+      // Plot Fill
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(px, py, pw, pl);
+
+      // Plot Inner Grid (1 unit intervals)
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 1;
+      for (let gx = 1; gx < state.plot.width; gx++) {
+        ctx.beginPath();
+        ctx.moveTo(toPxX(gx), py);
+        ctx.lineTo(toPxX(gx), py + pl);
+        ctx.stroke();
+      }
+      for (let gy = 1; gy < state.plot.length; gy++) {
+        ctx.beginPath();
+        ctx.moveTo(px, toPxY(gy));
+        ctx.lineTo(px + pw, toPxY(gy));
+        ctx.stroke();
+      }
+
+      // Plot Boundary Outer Wall
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([]);
+      ctx.strokeRect(px, py, pw, pl);
+
+      // Dimension Annotations
+      ctx.fillStyle = '#334155';
+      ctx.font = '600 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+
+      // Top measurement
+      ctx.fillText(`${state.plot.width} ${state.unit} (Overall Width)`, px + pw / 2, py - 8);
+
+      // Left measurement
+      ctx.save();
+      ctx.translate(px - 10, py + pl / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(`${state.plot.length} ${state.unit} (Overall Length)`, 0, 0);
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    function drawRooms() {
+      state.rooms.forEach(r => {
+        const rx = toPxX(r.x);
+        const ry = toPxY(r.y);
+        const rw = toPxDist(r.w);
+        const rl = toPxDist(r.l);
+
+        const isError = r.hasBoundaryError;
+        const colorConfig = isError ? roomTypeColors["Error"] : (roomTypeColors[r.type] || roomTypeColors["Custom"]);
+
+        ctx.save();
+
+        // Fill Room Box
+        ctx.fillStyle = colorConfig.bg;
+        ctx.fillRect(rx, ry, rw, rl);
+
+        // Pattern striping if error
+        if (isError) {
+          ctx.strokeStyle = "rgba(220, 38, 38, 0.2)";
+          ctx.lineWidth = 2;
+          for (let i = -rw; i < rw + rl; i += 10) {
+            ctx.beginPath();
+            ctx.moveTo(rx + Math.max(0, i), ry);
+            ctx.lineTo(rx + Math.min(rw, i + rl), ry + rl);
+            ctx.stroke();
+          }
+        }
+
+        // Border Outline
+        ctx.strokeStyle = isError ? '#dc2626' : (r.hasOverlap ? '#f59e0b' : colorConfig.border);
+        ctx.lineWidth = (r === state.draggedRoom || r.id === state.selectedRoomId) ? 3 : 2;
+        if (isError) {
+          ctx.setLineDash([5, 3]);
+        } else {
+          ctx.setLineDash([]);
+        }
+        ctx.strokeRect(rx, ry, rw, rl);
+
+        // Room Labels & Measurements (if box is large enough to show text)
+        if (rw > 40 && rl > 30) {
+          ctx.fillStyle = isError ? '#991b1b' : '#0f172a';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          // Title
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillText(r.name, rx + rw / 2, ry + rl / 2 - 8);
+
+          // Dimension subtitle
+          ctx.font = '10px sans-serif';
+          ctx.fillStyle = isError ? '#b91c1c' : '#475569';
+          ctx.fillText(`${r.w} × ${r.l} ${state.unit}`, rx + rw / 2, ry + rl / 2 + 8);
+        }
+
+        // Edge Dimension indicators
+        if (rw > 60 && rl > 50) {
+          ctx.font = '9px sans-serif';
+          ctx.fillStyle = '#64748b';
+          ctx.textAlign = 'center';
+          // Top edge dimension
+          ctx.fillText(`${r.w}${state.unit}`, rx + rw / 2, ry + 10);
+        }
+
+        ctx.restore();
+      });
+    }
+
+    // --- Interactive Mouse Drag & Drop ---
+    function getCanvasMousePos(evt) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+      };
+    }
+
+    function findRoomAt(worldX, worldY) {
+      // Loop backwards so top-most room is picked
+      for (let i = state.rooms.length - 1; i >= 0; i--) {
+        const r = state.rooms[i];
+        if (worldX >= r.x && worldX <= (r.x + r.w) && worldY >= r.y && worldY <= (r.y + r.l)) {
+          return r;
+        }
+      }
+      return null;
+    }
+
+    function attachEventListeners() {
+      // Dimension changes
+      plotWidthInput.addEventListener('input', (e) => {
+        state.plot.width = Math.max(5, parseFloat(e.target.value) || 10);
+        computeTransform();
+        validateLayout();
+        updateStats();
+        render();
+      });
+
+      plotLengthInput.addEventListener('input', (e) => {
+        state.plot.length = Math.max(5, parseFloat(e.target.value) || 10);
+        computeTransform();
+        validateLayout();
+        updateStats();
+        render();
+      });
+
+      unitSelect.addEventListener('change', (e) => {
+        state.unit = e.target.value;
+        validateLayout();
+        updateStats();
+        render();
+      });
+
+      // Add Room
+      addRoomBtn.addEventListener('click', () => {
+        const type = roomTypeInput.value;
+        const customName = roomNameInput.value.trim();
+        const w = parseFloat(roomWInput.value) || 10;
+        const l = parseFloat(roomLInput.value) || 10;
+        const x = parseFloat(roomXInput.value) || 0;
+        const y = parseFloat(roomYInput.value) || 0;
+
+        const newRoom = {
+          id: 'room_' + Date.now() + Math.random().toString(36).substr(2, 4),
+          name: customName || type,
+          type: type,
+          w: w,
+          l: l,
+          x: x,
+          y: y,
+          hasBoundaryError: false,
+          hasOverlap: false
+        };
+
+        state.rooms.push(newRoom);
+        roomNameInput.value = ''; // Reset
+
+        validateLayout();
+        updateStats();
+        render();
+      });
+
+      // Clear All
+      document.getElementById('clearAllBtn').addEventListener('click', () => {
+        if (confirm("Are you sure you want to clear all rooms?")) {
+          state.rooms = [];
+          validateLayout();
+          updateStats();
+          render();
+        }
+      });
+
+      // Load Sample Preset
+      document.getElementById('loadSampleBtn').addEventListener('click', loadSamplePlan);
+
+      // Export Image
+      document.getElementById('exportBtn').addEventListener('click', exportToPNG);
+
+      // --- Canvas Drag Events ---
+      canvas.addEventListener('mousedown', (e) => {
+        const pos = getCanvasMousePos(e);
+        const wx = toWorldX(pos.x);
+        const wy = toWorldY(pos.y);
+
+        const clickedRoom = findRoomAt(wx, wy);
+        if (clickedRoom) {
+          state.draggedRoom = clickedRoom;
+          state.selectedRoomId = clickedRoom.id;
+          state.dragOffset.x = wx - clickedRoom.x;
+          state.dragOffset.y = wy - clickedRoom.y;
+          canvas.style.cursor = 'grabbing';
+          render();
+        } else {
+          state.selectedRoomId = null;
+          render();
+        }
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!state.draggedRoom) return;
+
+        const pos = getCanvasMousePos(e);
+        const wx = toWorldX(pos.x);
+        const wy = toWorldY(pos.y);
+
+        // Snap to grid
+        let targetX = wx - state.dragOffset.x;
+        let targetY = wy - state.dragOffset.y;
+
+        targetX = Math.round(targetX / state.gridSnap) * state.gridSnap;
+        targetY = Math.round(targetY / state.gridSnap) * state.gridSnap;
+
+        state.draggedRoom.x = targetX;
+        state.draggedRoom.y = targetY;
+
+        // Sync inputs if this room matches inputs
+        validateLayout();
+        render();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (state.draggedRoom) {
+          state.draggedRoom = null;
+          canvas.style.cursor = 'crosshair';
+          validateLayout();
+          updateStats();
+          render();
+        }
+      });
+    }
+
+    // --- Sample Preset Loader ---
+    function loadSamplePlan() {
+      state.plot = { width: 42, length: 32 };
+      plotWidthInput.value = 42;
+      plotLengthInput.value = 32;
+
+      state.rooms = [
+        { id: '1', name: 'Living Room', type: 'Living Room', w: 18, l: 14, x: 0, y: 0 },
+        { id: '2', name: 'Kitchen & Dining', type: 'Kitchen', w: 14, l: 14, x: 18, y: 0 },
+        { id: '3', name: 'Verandah', type: 'Balcony', w: 10, l: 6, x: 32, y: 0 },
+        { id: '4', name: 'Master Bedroom', type: 'Master Bedroom', w: 16, l: 14, x: 0, y: 18 },
+        { id: '5', name: 'Bedroom 2', type: 'Bedroom', w: 14, l: 14, x: 16, y: 18 },
+        { id: '6', name: 'Attached Bath', type: 'Bathroom', w: 8, l: 6, x: 0, y: 14 },
+        { id: '7', name: 'Common Bath', type: 'Bathroom', w: 8, l: 6, x: 30, y: 18 },
+      ];
+
+      computeTransform();
+      validateLayout();
+      updateStats();
+      render();
+    }
+
+    // --- Export as Image ---
+    function exportToPNG() {
+      // Re-render at high resolution on a temp canvas for crystal-clear export
+      const expCanvas = document.createElement('canvas');
+      expCanvas.width = 1600;
+      expCanvas.height = 1200;
+      const expCtx = expCanvas.getContext('2d');
+
+      // Fill white background
+      expCtx.fillStyle = '#ffffff';
+      expCtx.fillRect(0, 0, expCanvas.width, expCanvas.height);
+
+      // Draw original canvas content scaled
+      expCtx.drawImage(canvas, 0, 0, expCanvas.width, expCanvas.height);
+
+      // Download
+      const link = document.createElement('a');
+      link.download = `house-plan-${Date.now()}.png`;
+      link.href = expCanvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Start
+    init();
+  </script>
 </body>
 </html>
